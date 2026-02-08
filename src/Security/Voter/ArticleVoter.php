@@ -64,7 +64,7 @@ class ArticleVoter extends Voter
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool
     {
 
-  
+
     $user = $token->getUser();
 
         // User must be logged in

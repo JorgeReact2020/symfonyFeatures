@@ -129,7 +129,7 @@ class ArticleController extends AbstractController
 
     /**
      * Delete article
-     * 
+     *
      * Authorization: Uses ArticleVoter to check ARTICLE_DELETE permission
      * Business Rule: Only SUPER_ADMIN role can delete articles
      */
@@ -144,11 +144,11 @@ class ArticleController extends AbstractController
 
         try {
             $article = $this->articleService->findById($id);
-            
+
             // Authorization check using Voter (Dependency Inversion Principle)
             // Controller depends on is_granted abstraction, not concrete authorization logic
             $this->denyAccessUnlessGranted('ARTICLE_DELETE', $article);
-            
+
             $this->articleService->delete($article);
 
             $this->addFlash('success', 'Article deleted successfully!');
