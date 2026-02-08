@@ -1,0 +1,21 @@
+{
+  "name": "symfonyproject",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "dev": "tailwindcss -i ./assets/styles/app.css -o ./public/build/app.css --watch",
+    "build": "tailwindcss -i ./assets/styles/app.css -o ./public/build/app.css --minify"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.18",
+    "tailwindcss": "^4.1.18"
+  }
+}
