@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block body %}
+<div style="margin: 50px auto; max-width: 600px; text-align: center;">
+    <h1>{{ title }}</h1>
+    <p>This is a simple home page.</p>
+
+    {% if is_granted('ROLE_ADMIN') %}
+        <div style="margin-top: 30px; padding: 20px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 5px;">
+            <p><strong>You are logged in as Admin!</strong></p>
+            <a href="{{ path('admin_dashboard') }}" style="display: inline-block; margin-top: 10px; padding: 10px 20px; background: #28a745; color: white; text-decoration: none; border-radius: 5px;">Go to Admin Dashboard</a>
+        </div>
+    {% elseif app.user %}
+        <div style="margin-top: 30px; padding: 20px; background: #d1ecf1; border: 1px solid #bee5eb; border-radius: 5px;">
+            <p>Welcome, {{ app.user.email }}</p>
+            <a href="{{ path('app_logout') }}" style="display: inline-block; margin-top: 10px; padding: 10px 20px; background: #dc3545; color: white; text-decoration: none; border-radius: 5px;">Logout</a>
+        </div>
+    {% else %}
+        <div style="margin-top: 30px;">
+            <a href="{{ path('app_login') }}" style="display: inline-block; padding: 12px 24px; background: #007bff; color: white; text-decoration: none; border-radius: 5px;">Login</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
