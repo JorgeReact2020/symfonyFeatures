@@ -29,7 +29,7 @@ class RequestLoggerListener
         }
 
         $request = $event->getRequest();
-        
+
         $this->logger->info('🎯 [EVENT LISTENER] Request received', [
             'method' => $request->getMethod(),
             'path' => $request->getPathInfo(),
