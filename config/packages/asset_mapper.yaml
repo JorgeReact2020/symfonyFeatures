@@ -3,6 +3,9 @@ framework:
         # The paths to make available to the asset mapper.
         paths:
             - assets/
+        # Exclude styles directory (handled by Tailwind CSS)
+        excluded_patterns:
+            - '*/styles/*'
         missing_import_mode: strict
 
 when@prod:

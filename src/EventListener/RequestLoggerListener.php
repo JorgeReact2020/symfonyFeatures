@@ -5,6 +5,7 @@ namespace App\EventListener;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 
+
 /**
  * Event Listener - Simple approach
  * Listens to ONE event: kernel.request

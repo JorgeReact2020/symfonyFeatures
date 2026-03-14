@@ -43,6 +43,7 @@ class ArticleController extends AbstractController
 
         return $this->render('admin/article/index.html.twig', [
             'articles' => $articles,
+            'test' => 'This is a test value passed to the template',
         ]);
     }
 
@@ -78,6 +79,7 @@ class ArticleController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             try {
                 $this->articleService->create($article);
+                $article = $article; // For debugging purposes, to inspect the created article
 
                 $this->addFlash('success', 'Article created successfully!');
 
