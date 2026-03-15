@@ -61,10 +61,11 @@ class PaymentController extends AbstractController
             amount: 100.0,
             currency: 'EUR',
             customerId: 'customer_123',
+            methodName: 'stripe',
             metadata: ['order_id' => 'ORD-001']
         );
 
-        $result = $this->paymentService->processPayment($payment, 'stripe');
+        $result = $this->paymentService->processPayment($payment);
 
         if ($result->success) {
             echo "✅ Succès: Transaction {$result->transactionId}\n";
@@ -83,10 +84,11 @@ class PaymentController extends AbstractController
             amount: 50.0,
             currency: 'EUR',
             customerId: 'customer_456',
+            methodName: 'paypal',
             metadata: ['order_id' => 'ORD-002']
         );
 
-        $result = $this->paymentService->processPayment($payment, 'paypal');
+        $result = $this->paymentService->processPayment($payment);
 
         if ($result->success) {
             echo "✅ Succès: Transaction {$result->transactionId}\n";
@@ -105,10 +107,11 @@ class PaymentController extends AbstractController
             amount: 2.0,
             currency: 'EUR',
             customerId: 'customer_789',
+            methodName: 'stripe',
             metadata: ['order_id' => 'ORD-003']
         );
 
-        $result = $this->paymentService->processPayment($payment, 'stripe');
+        $result = $this->paymentService->processPayment($payment);
 
         if ($result->success) {
             echo "❌ ERREUR: Le paiement aurait dû échouer!\n\n";
@@ -127,10 +130,11 @@ class PaymentController extends AbstractController
             amount: 25.0,
             currency: 'EUR',
             customerId: 'customer_refund',
+            methodName: 'stripe',
             metadata: ['order_id' => 'ORD-004']
         );
 
-        $result = $this->paymentService->processPayment($payment, 'stripe');
+        $result = $this->paymentService->processPayment($payment);
 
         if ($result->success) {
             echo "✅ Paiement initial: {$result->transactionId}\n";
@@ -164,6 +168,7 @@ class PaymentController extends AbstractController
         foreach ($methods as $method) {
             $status = $method['available'] ? '✅ Disponible' : '❌ Indisponible';
             echo "   • {$method['name']}: {$status}\n";
+            echo "     Frais: {$method['feesDescription']}\n\n";
         }
 
         echo "\n";

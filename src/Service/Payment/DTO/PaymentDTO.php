@@ -22,18 +22,20 @@ final readonly class PaymentDTO
         public Amount $amount,
         public Currency $currency,
         public string $customerId,
+        public string $methodName,
         public array $metadata = []
     ) {}
 
     /**
      * Factory methods pour créer facilement des paiements
      */
-    public static function create(float $amount, string $currency, string $customerId, array $metadata = []): self
+    public static function create(float $amount, string $currency, string $customerId, string $methodName, array $metadata = []): self
     {
-        return new self( 
+        return new self(
             new Amount($amount),
             new Currency($currency),
             $customerId,
+            $methodName,
             $metadata
         );
     }

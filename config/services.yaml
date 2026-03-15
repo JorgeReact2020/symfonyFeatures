@@ -4,10 +4,6 @@
 # Files in the packages/ subdirectory configure your dependencies.
 # See also https://symfony.com/doc/current/service_container/import.html
 
-# Put parameters here that don't need to change on each machine where the app is deployed
-# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
-parameters:
-
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -112,9 +108,6 @@ services:
         arguments:
             $feeCalculator: '@App\Service\Payment\FeeCalculator\BankTransferFeeCalculator'
         tags: ['app.payment_method']
-
-    # Validator de paiements (règles métier)
-    App\Service\Payment\Validator\PaymentValidator: ~
 
     # Logger de transactions (BDD)
     App\Service\Payment\Logger\TransactionPersister: ~

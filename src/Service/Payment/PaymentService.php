@@ -52,34 +52,39 @@ class PaymentService
         private readonly TransactionPersisterInterface $persister,
         private readonly TransactionAlertInterface $alert
     ) {
-        foreach ($paymentMethods as $method) {
-            $this->paymentMethods[$method->getName()] = $method;
+        foreach ($paymentMethods as $paymentMethod) {
+            $this->paymentMethods[$paymentMethod->getName()] = $paymentMethod;
         }
     }
 
     /**
-     * Traite un paiement avec le moyen de paiement spécifié
+     * Traite un paiement avec le moyen de paiement spécifié dans le DTO
      *
      * Orchestration complète :
-     * 1. Validation des règles métier
-     * 2. Traitement du paiement
-     * 3. Persistance en BDD si succès
-     * 4. Alerte admin si échec
+     * 1. Trouver le payment method (depuis $payment->methodName)
+     * 2. Récupérer les contraintes spécifiques du method
+     * 3. Validation des règles métier avec ces contraintes
+     * 4. Traitement du paiement
+     * 5. Persistance en BDD si succès
+     * 6. Alerte admin si échec
      */
-    public function processPayment(PaymentDTO $payment, string $methodName): TransactionResult
+    public function processPayment(PaymentDTO $payment): TransactionResult
     {
         try {
-            // 1. Valider les règles métier (délégué au validator)
-            $this->validator->validate($payment);
+            // 1. Trouver le moyen de paiement depuis le DTO
+            $method = $this->findPaymentMethod($payment->methodName);
 
-            // 2. Trouver le moyen de paiement
-            $method = $this->findPaymentMethod($methodName);
+            // 2. Récupérer les contraintes spécifiques au payment method
+            // (Stripe: 0.50€ min, PayPal: 1€ min, BankTransfer: 100€ min, etc.)
+            $constraints = $method->getConstraints();
 
+            // 3. Valider avec les contraintes spécifiques (délégué au validator)
+            $this->validator->validate($payment, $constraints);
 
-            // 3. Traiter le paiement (délégué au PaymentMethod)
+            // 4. Traiter le paiement (délégué au PaymentMethod)
             $result = $method->charge($payment);
 
-            // 4. Persister en BDD si succès (délégué au persister)
+            // 5. Persister en BDD si succès (délégué au persister)
             if ($result->success) {
                 $this->persister->persist($result);
             }
@@ -87,12 +92,12 @@ class PaymentService
             return $result;
 
         } catch (PaymentException $e) {
-            // 5. Alerter en cas d'échec (délégué à l'alert)
-            $this->alert->alertFailure($payment, $methodName, $e->getMessage());
+            // 6. Alerter en cas d'échec (délégué à l'alert)
+            $this->alert->alertFailure($payment, $payment->methodName, $e->getMessage());
 
             // Retourner un résultat d'échec
             return TransactionResult::failure(
-                paymentMethod: $methodName,
+                paymentMethod: $payment->methodName,
                 amount: $payment->amount->getValue(),
                 currency: $payment->currency->getCode(),
                 customerId: $payment->customerId,
@@ -142,7 +147,8 @@ class PaymentService
         foreach ($this->paymentMethods as $method) {
             $methods[] = [
                 'name' => $method->getName(),
-                'available' => $method->verify()
+                'available' => $method->verify(),
+                'feesDescription' => $method->getFeeCalculator()->getDescription()
             ];
         }
 

@@ -8,9 +8,23 @@ use App\Service\Payment\DTO\PaymentDTO;
 use App\Service\Payment\DTO\TransactionResult;
 use App\Service\Payment\Interface\FeeCalculatorInterface;
 use App\Service\Payment\Interface\PaymentMethodInterface;
+use App\Service\Payment\ValueObject\PaymentConstraints;
 
+/**
+ * Stripe Payment Method
+ *
+ * Contraintes Stripe (réelles) :
+ * - Minimum : 0.50€ (limite technique Stripe)
+ * - Maximum : 999,999€ (limite par transaction)
+ * - Devises : 135+ supportées (EUR, USD, GBP, CAD, AUD, etc.)
+ */
 class StripePayment implements PaymentMethodInterface
 {
+    // Contraintes spécifiques à Stripe
+    private const MIN_AMOUNT = 0.50;
+    private const MAX_AMOUNT = 999999.0;
+    private const SUPPORTED_CURRENCIES = ['EUR', 'USD', 'GBP', 'CAD', 'AUD'];
+
     public function __construct(private readonly FeeCalculatorInterface $feeCalculator) {}
 
     public function charge(PaymentDTO $payment): TransactionResult
@@ -48,4 +62,18 @@ class StripePayment implements PaymentMethodInterface
     public function verify(): bool { return true; }
 
     public function getName(): string { return "stripe"; }
+
+    public function getConstraints(): PaymentConstraints
+    {
+        return new PaymentConstraints(
+            minAmount: self::MIN_AMOUNT,
+            maxAmount: self::MAX_AMOUNT,
+            supportedCurrencies: self::SUPPORTED_CURRENCIES
+        );
+    }
+
+    public function getFeeCalculator(): FeeCalculatorInterface
+    {
+        return $this->feeCalculator;
+    }
 }

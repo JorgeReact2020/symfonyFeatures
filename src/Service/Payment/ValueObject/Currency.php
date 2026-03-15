@@ -7,23 +7,26 @@ namespace App\Service\Payment\ValueObject;
 use InvalidArgumentException;
 
 /**
- * ValueObject immutable pour garantir qu'une devise est TOUJOURS valide
+ * ValueObject immutable pour représenter une devise (ISO 4217)
  *
- * Invariant technique : devise existe dans la liste supportée
+ * Invariant technique : code devise valide (3 caractères alphabétiques)
+ *
+ * Note: La validation de la devise supportée par un payment method
+ * est maintenant faite par le PaymentValidator avec les PaymentConstraints
+ * spécifiques à chaque méthode (Stripe != PayPal != SEPA)
  */
 final class Currency
 {
-    private const SUPPORTED = ['EUR', 'USD', 'GBP'];
-
     private readonly string $code;
 
     public function __construct(string $code)
     {
-        $upperCode = strtoupper($code);
+        $upperCode = strtoupper(trim($code));
 
-        if (!in_array($upperCode, self::SUPPORTED, true)) {
+        // Valider FORMAT uniquement (3 caractères alphabétiques)
+        if (strlen($upperCode) !== 3 || !ctype_alpha($upperCode)) {
             throw new InvalidArgumentException(
-                "Devise '$code' non supportée. Devises acceptées : " . implode(', ', self::SUPPORTED)
+                "Invalid currency code format '$code'. Expected 3 alphabetic characters (ISO 4217)."
             );
         }
 
