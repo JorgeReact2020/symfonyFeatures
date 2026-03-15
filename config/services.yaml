@@ -77,3 +77,60 @@ services:
             $channels: !tagged_iterator app.notification_channel
             $filter: '@App\Service\Notification\Filter\UserPreferenceFilter'
             $logger: '@App\Service\Notification\Logger\NotificationLogger'
+
+    # ================================================================================
+    # PAYMENT SYSTEM - Configuration SOLID
+    # ================================================================================
+
+    # Exclure les DTOs, ValueObjects, Interfaces et Exceptions de l'autowiring
+    App\Service\Payment\:
+        resource: '../src/Service/Payment/'
+        exclude:
+            - '../src/Service/Payment/DTO/'
+            - '../src/Service/Payment/ValueObject/'
+            - '../src/Service/Payment/Interface/'
+            - '../src/Service/Payment/Exception/'
+
+    # Configuration des FeeCalculators (un par moyen de paiement)
+    App\Service\Payment\FeeCalculator\StripeFeeCalculator: ~
+    App\Service\Payment\FeeCalculator\PayPalFeeCalculator: ~
+    App\Service\Payment\FeeCalculator\BankTransferFeeCalculator: ~
+
+    # Configuration des PaymentMethods avec injection des calculateurs de frais
+    # Chaque PaymentMethod reçoit SON FeeCalculator spécifique
+    App\Service\Payment\Method\StripePayment:
+        arguments:
+            $feeCalculator: '@App\Service\Payment\FeeCalculator\StripeFeeCalculator'
+        tags: ['app.payment_method']
+
+    App\Service\Payment\Method\PayPalPayment:
+        arguments:
+            $feeCalculator: '@App\Service\Payment\FeeCalculator\PayPalFeeCalculator'
+        tags: ['app.payment_method']
+
+    App\Service\Payment\Method\BankTransferPayment:
+        arguments:
+            $feeCalculator: '@App\Service\Payment\FeeCalculator\BankTransferFeeCalculator'
+        tags: ['app.payment_method']
+
+    # Validator de paiements (règles métier)
+    App\Service\Payment\Validator\PaymentValidator: ~
+
+    # Logger de transactions (BDD)
+    App\Service\Payment\Logger\TransactionPersister: ~
+
+    # Alertes de transactions (emails admin)
+    App\Service\Payment\Logger\TransactionAlert: ~
+
+    # Service principal - Reçoit TOUS les PaymentMethods grâce au tag
+    # Open/Closed Principle: Pour ajouter CryptoWallet, il suffit de :
+    # 1. Créer CryptoWalletPayment implements PaymentMethodInterface
+    # 2. Créer CryptoWalletFeeCalculator implements FeeCalculatorInterface
+    # 3. Ajouter la config ici avec le tag 'app.payment_method'
+    # 4. AUCUNE modification de PaymentService !
+    App\Service\Payment\PaymentService:
+        arguments:
+            $paymentMethods: !tagged_iterator app.payment_method
+            $validator: '@App\Service\Payment\Validator\PaymentValidator'
+            $persister: '@App\Service\Payment\Logger\TransactionPersister'
+            $alert: '@App\Service\Payment\Logger\TransactionAlert'
