@@ -18,6 +18,13 @@ services:
     # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+            - '../src/Service/Notification/DTO/'
+            - '../src/Service/Notification/Interface/'
+            - '../src/Interfaces/'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
@@ -27,3 +34,46 @@ services:
     App\EventListener\RequestLoggerListener:
         tags:
             - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
+
+    # ================================================================================
+    # NOTIFICATION SYSTEM - Configuration SOLID
+    # ================================================================================
+
+    # Configuration des Formatters (chacun pour un canal spécifique)
+    App\Service\Notification\Formatter\EmailFormatter: ~
+    App\Service\Notification\Formatter\SmsFormatter: ~
+    App\Service\Notification\Formatter\SlackFormatter: ~
+
+    # Configuration des Channels avec injection des bons formatters
+    # Chaque channel reçoit SON formatter spécifique
+    App\Service\Notification\Channel\EmailChannel:
+        arguments:
+            $formatter: '@App\Service\Notification\Formatter\EmailFormatter'
+        tags: ['app.notification_channel']
+
+    App\Service\Notification\Channel\SmsChannel:
+        arguments:
+            $formatter: '@App\Service\Notification\Formatter\SmsFormatter'
+        tags: ['app.notification_channel']
+
+    App\Service\Notification\Channel\SlackChannel:
+        arguments:
+            $formatter: '@App\Service\Notification\Formatter\SlackFormatter'
+        tags: ['app.notification_channel']
+
+    # Logger de notifications
+    App\Service\Notification\Logger\NotificationLogger: ~
+
+    # Filter de notifications
+    App\Service\Notification\Filter\UserPreferenceFilter: ~
+
+    # Service principal - Reçoit TOUS les channels grâce au tag
+    # Open/Closed Principle: Pour ajouter un nouveau canal, il suffit de :
+    # 1. Créer la classe Channel
+    # 2. Ajouter la config ici avec le tag 'app.notification_channel'
+    # 3. Pas besoin de toucher NotificationService !
+    App\Service\Notification\NotificationService:
+        arguments:
+            $channels: !tagged_iterator app.notification_channel
+            $filter: '@App\Service\Notification\Filter\UserPreferenceFilter'
+            $logger: '@App\Service\Notification\Logger\NotificationLogger'

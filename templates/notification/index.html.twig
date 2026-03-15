@@ -1,0 +1,106 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tests SOLID - Système de Notification{% endblock %}
+
+{% block body %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-6 text-gray-800">🎯 Tests SOLID - Système de Notification</h1>
+    
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+        <h2 class="text-xl font-semibold mb-2">Canaux disponibles:</h2>
+        <ul class="list-disc list-inside">
+            {% for channel in channels %}
+                <li class="text-gray-700">✅ {{ channel }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Test 1 -->
+        <div class="bg-white shadow-lg rounded-lg p-6 border-t-4 border-red-500">
+            <h3 class="text-2xl font-bold mb-3 text-red-600">Test 1 : Envoi Simple</h3>
+            <p class="text-gray-600 mb-4">Envoie une alerte de maintenance par email uniquement.</p>
+            <ul class="text-sm text-gray-500 mb-4 list-disc list-inside">
+                <li>Type: Alert</li>
+                <li>Canal: Email</li>
+                <li>Destinataire: user@example.com</li>
+            </ul>
+            <a href="{{ path('notification_test_simple') }}" 
+               class="inline-block bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600 transition">
+                Exécuter Test 1
+            </a>
+        </div>
+        
+        <!-- Test 2 -->
+        <div class="bg-white shadow-lg rounded-lg p-6 border-t-4 border-green-500">
+            <h3 class="text-2xl font-bold mb-3 text-green-600">Test 2 : Multi-Canal</h3>
+            <p class="text-gray-600 mb-4">Envoie une promotion sur TOUS les canaux disponibles.</p>
+            <ul class="text-sm text-gray-500 mb-4 list-disc list-inside">
+                <li>Type: Promotion</li>
+                <li>Canaux: Email + SMS + Slack</li>
+                <li>Destinataire: +33612345678</li>
+            </ul>
+            <a href="{{ path('notification_test_multi') }}" 
+               class="inline-block bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition">
+                Exécuter Test 2
+            </a>
+        </div>
+        
+        <!-- Test 3 -->
+        <div class="bg-white shadow-lg rounded-lg p-6 border-t-4 border-yellow-500">
+            <h3 class="text-2xl font-bold mb-3 text-yellow-600">Test 3 : Préférences</h3>
+            <p class="text-gray-600 mb-4">Teste le filtrage selon les préférences utilisateur.</p>
+            <ul class="text-sm text-gray-500 mb-4 list-disc list-inside">
+                <li>Type: Info</li>
+                <li>user@example.com a désactivé les SMS</li>
+                <li>Les SMS doivent être bloqués ❌</li>
+            </ul>
+            <a href="{{ path('notification_test_preferences') }}" 
+               class="inline-block bg-yellow-500 text-white px-6 py-2 rounded hover:bg-yellow-600 transition">
+                Exécuter Test 3
+            </a>
+        </div>
+        
+        <!-- Test 4 -->
+        <div class="bg-white shadow-lg rounded-lg p-6 border-t-4 border-purple-500">
+            <h3 class="text-2xl font-bold mb-3 text-purple-600">Test 4 : Open/Closed</h3>
+            <p class="text-gray-600 mb-4">Démontre le principe Open/Closed (extension sans modification).</p>
+            <ul class="text-sm text-gray-500 mb-4 list-disc list-inside">
+                <li>Liste les canaux disponibles</li>
+                <li>Explique comment ajouter WhatsApp</li>
+                <li>Sans modifier le code existant ✅</li>
+            </ul>
+            <a href="{{ path('notification_test_open_closed') }}" 
+               class="inline-block bg-purple-500 text-white px-6 py-2 rounded hover:bg-purple-600 transition">
+                Exécuter Test 4
+            </a>
+        </div>
+    </div>
+    
+    <div class="mt-8 bg-gray-50 rounded-lg p-6">
+        <h2 class="text-2xl font-bold mb-4">📚 Principes SOLID vérifiés:</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="bg-white p-4 rounded shadow">
+                <h3 class="font-bold text-lg mb-2">S - Single Responsibility</h3>
+                <p class="text-sm text-gray-600">Chaque classe a UNE responsabilité : Channel envoie, Formatter formate, Logger log.</p>
+            </div>
+            <div class="bg-white p-4 rounded shadow">
+                <h3 class="font-bold text-lg mb-2">O - Open/Closed</h3>
+                <p class="text-sm text-gray-600">Ajoutez WhatsApp sans modifier NotificationService (test 4)</p>
+            </div>
+            <div class="bg-white p-4 rounded shadow">
+                <h3 class="font-bold text-lg mb-2">L - Liskov Substitution</h3>
+                <p class="text-sm text-gray-600">EmailChannel, SmsChannel, SlackChannel sont interchangeables</p>
+            </div>
+            <div class="bg-white p-4 rounded shadow">
+                <h3 class="font-bold text-lg mb-2">I - Interface Segregation</h3>
+                <p class="text-sm text-gray-600">Interfaces petites : NotificationChannelInterface (2 méthodes), MessageFormatterInterface (1 méthode)</p>
+            </div>
+            <div class="bg-white p-4 rounded shadow">
+                <h3 class="font-bold text-lg mb-2">D - Dependency Inversion</h3>
+                <p class="text-sm text-gray-600">Tout dépend d'abstractions, pas de classes concrètes</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
