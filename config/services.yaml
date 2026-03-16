@@ -24,7 +24,25 @@ services:
             - '../src/Service/Report/ValueObject/'
             - '../src/Service/Report/Interface/'
             - '../src/Service/Report/Exception/'
+            - '../src/Service/Order/DTO/'
+            - '../src/Service/Order/ValueObject/'
+            - '../src/Service/Order/Interface/'
+            - '../src/Service/Order/Exception/'
+            - '../src/Service/Order/Product/'
             - '../src/Interfaces/'
+
+    # Order System - Tagged Iterator Pattern (OCP: Open/Closed Principle)
+    _instanceof:
+        App\Service\Order\Interface\PromotionInterface:
+            tags: ['order.promotion']
+
+    # Explicit interface bindings for DIP (Dependency Inversion Principle)
+    App\Service\Order\Interface\PriceCalculatorInterface: '@App\Service\Order\Service\PriceCalculator'
+    App\Service\Order\Interface\StockManagerInterface: '@App\Service\Order\Service\StockManager'
+
+    App\Service\Order\Service\OrderProcessingService:
+        arguments:
+            $promotions: !tagged_iterator order.promotion
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
