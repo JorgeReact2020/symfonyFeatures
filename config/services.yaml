@@ -20,6 +20,10 @@ services:
             - '../src/Kernel.php'
             - '../src/Service/Notification/DTO/'
             - '../src/Service/Notification/Interface/'
+            - '../src/Service/Report/DTO/'
+            - '../src/Service/Report/ValueObject/'
+            - '../src/Service/Report/Interface/'
+            - '../src/Service/Report/Exception/'
             - '../src/Interfaces/'
 
     # add more service definitions when explicit configuration is needed
@@ -127,3 +131,45 @@ services:
             $validator: '@App\Service\Payment\Validator\PaymentValidator'
             $persister: '@App\Service\Payment\Logger\TransactionPersister'
             $alert: '@App\Service\Payment\Logger\TransactionAlert'
+
+    # ================================================================================
+    # REPORTING SYSTEM - Configuration SOLID
+    # ================================================================================
+
+    # DataProvider - Source des données
+    App\Service\Report\DataProvider\MockSalesDataProvider: ~
+
+    # Exporters - Tags pour l'injection via !tagged_iterator
+    # ISP Démo: CSV et JSON n'implémentent QUE ReportExporterInterface
+    #           PDF et Excel implémentent 3 interfaces (+ ChartCapable + FormattingCapable)
+    App\Service\Report\Exporter\CsvReportExporter:
+        tags: ['report.exporter']
+
+    App\Service\Report\Exporter\JsonReportExporter:
+        tags: ['report.exporter']
+
+    App\Service\Report\Exporter\PdfReportExporter:
+        tags: ['report.exporter']
+
+    App\Service\Report\Exporter\ExcelReportExporter:
+        tags: ['report.exporter']
+
+    # Delivery Methods - Tags pour l'injection via !tagged_iterator
+    App\Service\Report\Delivery\DownloadDelivery:
+        tags: ['report.delivery']
+
+    App\Service\Report\Delivery\EmailDelivery:
+        tags: ['report.delivery']
+
+    # Service principal - Orchestrateur de génération de rapports
+    # Démontre TOUS les principes SOLID:
+    # - SRP: Chaque classe a UNE responsabilité (DataProvider, Exporter, Delivery)
+    # - OCP: Ajouter XmlExporter = créer classe + tag, ZÉRO modif du service
+    # - LSP: Tous les exporters sont substituables via ReportExporterInterface
+    # - ISP: ChartCapable et FormattingCapable SÉPARÉS (CSV n'est pas forcé de les impl)
+    # - DIP: Dépend des INTERFACES, pas de classes concrètes
+    App\Service\Report\ReportGeneratorService:
+        arguments:
+            $dataProvider: '@App\Service\Report\DataProvider\MockSalesDataProvider'
+            $exporters: !tagged_iterator report.exporter
+            $deliveryServices: !tagged_iterator report.delivery
