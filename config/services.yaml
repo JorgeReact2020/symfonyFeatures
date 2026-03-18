@@ -35,6 +35,8 @@ services:
             - '../src/Service/Quiz/Exception/'
             - '../src/Service/Quiz/Question/'
             - '../src/Service/Quiz/Model/'
+            - '../src/Service/Logger/DTO/'
+            - '../src/Service/Logger/Interface/'
             - '../src/Interfaces/'
 
     # Order System - Tagged Iterator Pattern (OCP: Open/Closed Principle)
@@ -45,6 +47,8 @@ services:
             tags: ['quiz.scoring_strategy']
         App\Service\Quiz\Interface\ValidationRuleInterface:
             tags: ['quiz.validator']
+        App\Service\Logger\Interface\LogWriterInterface:
+            tags: ['app.log_writer']
 
     # Explicit interface bindings for DIP (Dependency Inversion Principle)
     App\Service\Order\Interface\PriceCalculatorInterface: '@App\Service\Order\Service\PriceCalculator'
@@ -212,3 +216,36 @@ services:
             $dataProvider: '@App\Service\Report\DataProvider\MockSalesDataProvider'
             $exporters: !tagged_iterator report.exporter
             $deliveryServices: !tagged_iterator report.delivery
+
+    # ================================================================================
+    # LOGGER SYSTEM - Configuration SOLID
+    # ================================================================================
+
+    # Writers - Tagged pour l'injection via !tagged_iterator
+    # SRP: Chaque writer n'écrit que vers UNE destination
+    # LSP: Tous les writers sont interchangeables via LogWriterInterface
+    App\Service\Logger\Writer\FileWriter:
+        arguments:
+            $filePath: '%kernel.logs_dir%/app.log'
+        tags: ['app.log_writer']
+
+    App\Service\Logger\Writer\ConsoleWriter:
+        tags: ['app.log_writer']
+
+    # DatabaseWriter désactivé par défaut (nécessite table 'logs')
+    # App\Service\Logger\Writer\DatabaseWriter:
+    #     tags: ['app.log_writer']
+
+    # Filter - Filtre les logs par niveau minimum
+    # SRP: Ne fait QUE filtrer, ne logue pas
+    App\Service\Logger\Filter\LevelFilter:
+        arguments:
+            $minLevel: 'INFO'
+
+    # Service principal - Orchestrateur de logging
+    # OCP: Ajouter SlackWriter = créer classe + tag, ZÉRO modif du service
+    # DIP: Dépend de LogWriterInterface et LogFilterInterface, pas de classes concrètes
+    App\Service\Logger\LoggerService:
+        arguments:
+            $writers: !tagged_iterator app.log_writer
+            $filter: '@App\Service\Logger\Filter\LevelFilter'
