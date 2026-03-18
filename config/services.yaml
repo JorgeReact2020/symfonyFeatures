@@ -29,20 +29,41 @@ services:
             - '../src/Service/Order/Interface/'
             - '../src/Service/Order/Exception/'
             - '../src/Service/Order/Product/'
+            - '../src/Service/Quiz/DTO/'
+            - '../src/Service/Quiz/ValueObject/'
+            - '../src/Service/Quiz/Interface/'
+            - '../src/Service/Quiz/Exception/'
+            - '../src/Service/Quiz/Question/'
+            - '../src/Service/Quiz/Model/'
             - '../src/Interfaces/'
 
     # Order System - Tagged Iterator Pattern (OCP: Open/Closed Principle)
     _instanceof:
         App\Service\Order\Interface\PromotionInterface:
             tags: ['order.promotion']
+        App\Service\Quiz\Interface\ScoringStrategyInterface:
+            tags: ['quiz.scoring_strategy']
+        App\Service\Quiz\Interface\ValidationRuleInterface:
+            tags: ['quiz.validator']
 
     # Explicit interface bindings for DIP (Dependency Inversion Principle)
     App\Service\Order\Interface\PriceCalculatorInterface: '@App\Service\Order\Service\PriceCalculator'
     App\Service\Order\Interface\StockManagerInterface: '@App\Service\Order\Service\StockManager'
+    App\Service\Quiz\Interface\ScoringServiceInterface: '@App\Service\Quiz\Service\ScoringService'
+    App\Service\Quiz\Interface\ValidationServiceInterface: '@App\Service\Quiz\Service\ValidationService'
 
     App\Service\Order\Service\OrderProcessingService:
         arguments:
             $promotions: !tagged_iterator order.promotion
+
+    # Quiz System - Tagged Iterator Pattern (OCP: Open/Closed Principle)
+    App\Service\Quiz\Service\ScoringService:
+        arguments:
+            $strategies: !tagged_iterator quiz.scoring_strategy
+
+    App\Service\Quiz\Service\ValidationService:
+        arguments:
+            $validators: !tagged_iterator quiz.validator
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
